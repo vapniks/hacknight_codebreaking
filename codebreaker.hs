@@ -10,7 +10,7 @@ import Data.String
 
 runDecode :: String -> IO ()
 runDecode str = do dicttext <- dictionary
-                   let dictwords = words dicttext
+                   let dictwords = S.fromList (words dicttext)
                        results = decode str dictwords
                    case results of
                         Nothing -> putStrLn $ "Couldn't decode: " ++ str
@@ -22,7 +22,7 @@ alphabet = "abcdefghijklmnopqrstuvwxyz"
 dictionary :: IO String
 dictionary = readFile "/usr/share/dict/words"
 
-decode :: String -> [String] -> Maybe String
+decode :: String -> S.Set String -> Maybe String
 decode str dict = let combos = (concatMap permutations $ subsequences alldecoders)
                       func = foldl (flip map) $ extractWords str
                       results = map func combos
@@ -36,7 +36,7 @@ extractWords :: String -> [String]
 extractWords str = words $ filter (\a -> isSeparator a || isLetter a) $ map toLower str
 
 alldecoders :: [String -> String]
-alldecoders = decodeOddEven:reverse:(decodeRot <$> [1,2,3])
+alldecoders = decodeOddEven:reverse:(decodeRot <$> [1,2,3,4,5])
 
 rotate :: Int -> [a] -> [a]
 rotate _ [] = []
@@ -57,12 +57,11 @@ decodeOddEven str = let len = length str
                         in concat (zipWith (\a b -> a:[b]) evens odds) ++ extra
 
 
-check :: [String] -> [String] -> Bool
-check dict strlist = let dictwords = S.fromList dict
-                         allwords = S.fromList strlist
-                         numwords = S.size allwords
-                         nummatches = S.size $ S.intersection dictwords allwords
-                         proportion = fromIntegral nummatches / fromIntegral numwords
-                     in proportion > 0.5
+check :: S.Set String -> [String] -> Bool
+check dictwords strlist = let allwords = S.fromList strlist
+                              numwords = S.size allwords
+                              nummatches = S.size (S.intersection dictwords allwords)
+                              proportion = fromIntegral nummatches / fromIntegral numwords
+                          in proportion > 0.5
 
 
