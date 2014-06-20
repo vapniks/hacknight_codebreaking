@@ -1,12 +1,19 @@
 -- Codebreaking challenge for West London Hacknight
-
-import Control.Applicative
-import Control.Monad
+import           Control.Applicative 
 import qualified Data.Set as S
-import Data.List
-import Data.Maybe
-import Data.Char
-import Data.String
+import           Data.List
+import           Data.Maybe
+import           Data.Char
+import           System.Environment
+import           System.Exit 
+import           System.IO
+
+main :: IO ()
+main = do args <- getArgs
+          case args of
+            [text] -> runDecode text
+            _ -> do hPutStrLn stderr "Usage: codebreaker \"<query text>\""
+                    exitWith $ ExitFailure 1 
 
 runDecode :: String -> IO ()
 runDecode str = do dicttext <- dictionary
